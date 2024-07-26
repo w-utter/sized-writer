@@ -33,8 +33,16 @@ impl <T> SizedWriter<T> where T: AsMut<[u8]> {
 }
 
 impl <'buf> SizedWriter<&'buf mut [u8]> {
-    pub fn from_borrowed(b: &'buf mut impl AsMut<[u8]>) -> Self {
+    pub fn from_borrowed<T: AsMut<[u8]> + Sized>(b: &'buf mut T) -> Self {
         SizedWriter::new(b.as_mut())
+    }
+
+    /// unwraps into underlying buffer
+    ///
+    /// this is usualy called once writing is finished 
+    /// and is ready to be sent over a communication line
+    pub fn finish(self) -> &'buf [u8] {
+        &self.writer[..self.count]
     }
 }
 
@@ -141,6 +149,17 @@ mod tests {
             assert!(writer.overflowed())
         }
         assert_eq!(&b, &[1, 2, 3, 4]);
+        Ok(())
+    }
+
+    #[test]
+    fn finish() -> std::io::Result<()> {
+        let mut b = [0u8; 32];
+        let mut writer = SizedWriter::from_borrowed(&mut b);
+        writer.write(&[1, 2, 3, 4, 5])?;
+        writer.write(&[6, 7, 8, 9, 10])?;
+
+        assert_eq!(writer.finish(), &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         Ok(())
     }
 }

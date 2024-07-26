@@ -46,6 +46,12 @@ impl <'buf> SizedWriter<&'buf mut [u8]> {
     }
 }
 
+impl <'buf, const N: usize> SizedWriter<&'buf mut [u8; N]> {
+    pub fn finish_sized(self) -> &'buf [u8] {
+        &self.writer[..self.count]
+    }
+}
+
 impl <const N: usize> SizedWriter<[u8; N]> {
     pub fn with_size() -> Self {
         let buf = [0; N];

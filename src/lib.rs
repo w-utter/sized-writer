@@ -37,6 +37,10 @@ impl <'buf> SizedWriter<&'buf mut [u8]> {
         SizedWriter::new(b.as_mut())
     }
 
+    pub fn from_mut(b: &'buf mut [u8]) -> Self {
+        Self::new(b)
+    }
+
     /// unwraps into underlying buffer
     ///
     /// this is usualy called once writing is finished 
@@ -161,7 +165,7 @@ mod tests {
     #[test]
     fn finish() -> std::io::Result<()> {
         let mut b = [0u8; 32];
-        let mut writer = SizedWriter::from_borrowed(&mut b);
+        let mut writer = SizedWriter::from_mut(&mut b);
         writer.write(&[1, 2, 3, 4, 5])?;
         writer.write(&[6, 7, 8, 9, 10])?;
 
